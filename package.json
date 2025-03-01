@@ -4,7 +4,7 @@
     "description": "A command line script that parses a cron string and expands each field to show the times at which it will run.",
     "main": "index.js",
     "scripts": {
-        "parse-cron-expression": "ts-node ./src/scripts/parseCronExpression.ts",
+        "expand-cron-expression": "ts-node ./src/entrypoint.ts",
         "test": "jest"
     },
     "author": "Andrea Diotallevi",

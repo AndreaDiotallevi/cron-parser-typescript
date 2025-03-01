@@ -21,17 +21,23 @@ type ParsedField = {
 
 export const expandCronExpression = (cronString: string) => {
     if (!cronString) {
-        throw new Error(`Cron string not provided`)
+        throw new Error(`Please provide an input string`)
     }
 
-    const fields = cronString.split(" ")
-    console.log(fields)
+    const parts = cronString.split(" ")
 
-    if (fields.length != 6) {
-        throw new Error(`Invalid number of fields`)
+    if (parts.length != 6) {
+        throw new Error(`Please provide 5 fields and a command`)
     }
 
-    const parsedFields: ParsedField[] = fields.map((field) => {
+    const [...unparsedFields] = parts.slice(0, 5)
+    const command = parts[parts.length - 1]
+
+    console.log(unparsedFields)
+    console.log(command)
+
+    const parsedFields: ParsedField[] = unparsedFields.map((field) => {
+        console.log(field)
         if (field.includes("/")) {
             return parseField({ format: "/", field })
         }
@@ -44,9 +50,11 @@ export const expandCronExpression = (cronString: string) => {
         if (field == "*") {
             return { format: "*", factors: [] }
         }
-        if (Number.isInteger(field)) {
-            return parseField({ format: "", field })
+        if (Number.isInteger(parseInt(field))) {
+            console.log("integer")
+            return { format: "", factors: [parseInt(field)] }
         }
+        console.log("here")
         throw new Error(`Invalid cron string`)
     })
 
@@ -60,21 +68,21 @@ const parseField = ({
     format: Format
     field: string
 }): ParsedField => {
-    const factors = field.split(format).map((item) => {
-        console.log(item)
-        if (item == "*") {
-            return item
-        }
-
-        if (Number.isInteger(item)) {
-            return parseInt(item)
-        }
-
-        throw new Error(`Invalid cron string`)
-    })
-    console.log("after")
+    const factors = field.split(format).map((factor) => parseFactor({ factor }))
 
     return { format, factors }
+}
+
+const parseFactor = ({ factor }: { factor: string }) => {
+    if (factor == "*") {
+        return factor
+    }
+
+    if (Number.isInteger(parseInt(factor))) {
+        return parseInt(factor)
+    }
+
+    throw new Error(`Invalid cron string`)
 }
 
 // 1. extract fields

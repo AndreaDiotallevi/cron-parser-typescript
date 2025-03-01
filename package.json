@@ -8,7 +8,7 @@
   },
   "author": "Andrea Diotallevi",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "typescript": "^5.8.2"
   }
 }

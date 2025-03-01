@@ -1,5 +1,9 @@
 export const expandCronExpression = (cronString: string) => {
-    console.log("CRON string: " + cronString)
+    const fields = cronString.split(" ")
+
+    if (fields.length != 6) {
+        throw new Error(`Invalid number of fields`)
+    }
 }
 
 // 1. extract fields

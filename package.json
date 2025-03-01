@@ -1,14 +1,17 @@
 {
-  "name": "cron-parser-typescript",
-  "version": "1.0.0",
-  "description": "A command line script that parses a cron string and expands each field to show the times at which it will run.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Andrea Diotallevi",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "^5.8.2"
-  }
+    "name": "cron-parser-typescript",
+    "version": "1.0.0",
+    "description": "A command line script that parses a cron string and expands each field to show the times at which it will run.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Andrea Diotallevi",
+    "license": "ISC",
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "prettier": "^3.5.2",
+        "ts-jest": "^29.2.6",
+        "typescript": "^5.8.2"
+    }
 }

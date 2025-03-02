@@ -4,7 +4,7 @@
 
 This project is a command line script that parses a cron string and expands each field to show the times at which it will run.
 
-More from the requirements: _You should only consider the standard cron format with five time fields (minute, hour, day of month, month, and day of week) plus a command, and you do not need to handle the special time strings such as "@yearly". The input will be on a single line._
+From the requirements: _You should only consider the standard cron format with five time fields (minute, hour, day of month, month, and day of week) plus a command, and you do not need to handle the special time strings such as "@yearly". The input will be on a single line._
 
 For example:
 
@@ -12,7 +12,7 @@ For example:
 */15 0 1,15 * 1-5 /usr/bin/find
 ```
 
-Should output:
+This should output:
 
 ```
 minute         0 15 30 45
@@ -25,15 +25,15 @@ command        /usr/bin/find
 
 ## How to use
 
-I have used TypeScript since it's the language I am the most comfortable with.
+I used TypeScript because I am most comfortable with it.
 
-- Install dependencies with
+- Install dependencies with:
 
 ```
 npm install
 ```
 
-- Run from the command line the script `expand-cron-expression` followed by the input string (I have used `ts-node` to directly execute TypeScript on Node.js without precompiling):
+- Run the script `expand-cron-expression` from the command line, followed by the input string (I used `ts-node` to directly execute TypeScript on Node.js without precompiling):
 
 ```
 npm run expand-cron-expression "*/15 0 1,15 * 1-5 /usr/bin/find"
@@ -63,14 +63,14 @@ npm run expand-cron-expression "*/15 0 1,15 * 1-5 /usr/bin/find"
 
 ## Technical notes
 
-- I have used a functional programming style for this challenge as I thought it would work well for transforming data (i.e. `map` function), more than thinking in terms of objects.
+- I used a functional programming style for this challenge because I thought it would work well for transforming data (e.g., using the `map` function), rather than thinking in terms of objects.
 
-- I have divided the logic into three parts:
+- I divided the logic into three parts:
     - Validate the Cron string parts:
         - Error: Please provide an input cron string
         - Error: Please provide 5 fields and a command
-        - Success: Returns the unparse fields (`{ unparsedFields: string[]; command: string } `)
-    - Expand each field correct times:
+        - Success: Returns the unparsed fields (`{ unparsedFields: string[]; command: string } `)
+    - Expand each field to the correct times:
         - Error: Invalid field
         - Success: Returns an array of expanded fields (`{ name: string; times: number[] }[]`)
     - Print the formatted table:

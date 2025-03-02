@@ -71,4 +71,40 @@ describe("The expandFields() function", () => {
         })
         expect(fields).toEqual([{ name: "test", times: [2, 3, 4] }])
     })
+    it("Should throw an 'Invalid field' error if integer field is out of range", () => {
+        const f = () => {
+            expandFields({
+                unparsedFields: ["8"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f).toThrow(`Invalid field: 8`)
+    })
+    it("Should throw an 'Invalid field' error if increment field is out of range", () => {
+        const f = () => {
+            expandFields({
+                unparsedFields: ["60/99"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f).toThrow(`Invalid field: 60/99`)
+    })
+    it("Should throw an 'Invalid field' error if list field is out of range", () => {
+        const f = () => {
+            expandFields({
+                unparsedFields: ["1,7"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f).toThrow(`Invalid field: 1,7`)
+    })
+    it("Should throw an 'Invalid field' error if range field is out of range", () => {
+        const f = () => {
+            expandFields({
+                unparsedFields: ["1-7"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f).toThrow(`Invalid field: 1-7`)
+    })
 })

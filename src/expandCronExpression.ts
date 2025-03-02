@@ -82,9 +82,6 @@ export const expandFields = ({
         if (incrementRegexWithWildCard.test(field)) {
             const [_, incrementString] = field.split("/")
             const increment = parseInt(incrementString)
-            if (increment <= 0) {
-                throw new Error("Invalid field: " + field)
-            }
             let current = 0
             times.push(current)
 
@@ -102,9 +99,6 @@ export const expandFields = ({
             const start = parseInt(startString)
             const increment = parseInt(incrementString)
             if (start < min || start > max) {
-                throw new Error("Invalid field: " + field)
-            }
-            if (increment <= 0) {
                 throw new Error("Invalid field: " + field)
             }
             let current = start

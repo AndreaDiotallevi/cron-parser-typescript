@@ -13,7 +13,7 @@ export const expandCronExpression = ({
     cronString,
 }: {
     cronString: string
-}) => {
+}): void => {
     const { unparsedFields, command } = validateCronStringParts({ cronString })
 
     const expandedFields = expandFields({

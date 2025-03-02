@@ -36,42 +36,40 @@ describe("The expandFields() function", () => {
             unparsedFields: ["*"],
             fieldProperties: [{ name: "test", min: 0, max: 5 }],
         })
-        expect(fields).toEqual([
-            { name: "test", times: new Set([0, 1, 2, 3, 4, 5]) },
-        ])
+        expect(fields).toEqual([{ name: "test", times: [0, 1, 2, 3, 4, 5] }])
     })
     it("Should expand correctly the times of an integer field (simple number like 2)", () => {
         const fields = expandFields({
             unparsedFields: ["3"],
             fieldProperties: [{ name: "test", min: 0, max: 5 }],
         })
-        expect(fields).toEqual([{ name: "test", times: new Set([3]) }])
+        expect(fields).toEqual([{ name: "test", times: [3] }])
     })
     it("Should expand correctly the times of an increment field (/)", () => {
         const fields = expandFields({
             unparsedFields: ["1/2"],
             fieldProperties: [{ name: "test", min: 0, max: 5 }],
         })
-        expect(fields).toEqual([{ name: "test", times: new Set([1, 3, 5]) }])
+        expect(fields).toEqual([{ name: "test", times: [1, 3, 5] }])
         const fields2 = expandFields({
             unparsedFields: ["*/2"],
             fieldProperties: [{ name: "test", min: 0, max: 5 }],
         })
-        expect(fields2).toEqual([{ name: "test", times: new Set([0, 2, 4]) }])
+        expect(fields2).toEqual([{ name: "test", times: [0, 2, 4] }])
     })
     it("Should expand correctly the times of a list field (,)", () => {
         const fields = expandFields({
             unparsedFields: ["1,2,4"],
             fieldProperties: [{ name: "test", min: 0, max: 5 }],
         })
-        expect(fields).toEqual([{ name: "test", times: new Set([1, 2, 4]) }])
+        expect(fields).toEqual([{ name: "test", times: [1, 2, 4] }])
     })
     it("Should expand correctly the times of a range field (-)", () => {
         const fields = expandFields({
             unparsedFields: ["2-4"],
             fieldProperties: [{ name: "test", min: 0, max: 5 }],
         })
-        expect(fields).toEqual([{ name: "test", times: new Set([2, 3, 4]) }])
+        expect(fields).toEqual([{ name: "test", times: [2, 3, 4] }])
     })
     it("Should throw an 'Invalid field' error if integer field is out of range", () => {
         const f = () => {

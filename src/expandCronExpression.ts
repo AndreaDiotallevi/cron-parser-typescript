@@ -6,7 +6,7 @@ type FieldProperties = {
 
 type ExpandedField = {
     name: string
-    times: Set<number>
+    times: number[]
 }
 
 export const expandCronExpression = ({
@@ -60,11 +60,11 @@ export const expandFields = ({
 }): ExpandedField[] => {
     return unparsedFields.map((field, i) => {
         const { name, min, max } = fieldProperties[i]
-        const times: ExpandedField["times"] = new Set()
+        const times: ExpandedField["times"] = []
 
         if (field == "*") {
             for (let i = min; i <= max; i++) {
-                times.add(i)
+                times.push(i)
             }
             return { name, times }
         }
@@ -75,7 +75,7 @@ export const expandFields = ({
             if (time < min || time > max) {
                 throw new Error("Invalid field: " + field)
             }
-            times.add(time)
+            times.push(time)
             return { name, times }
         }
 
@@ -87,11 +87,11 @@ export const expandFields = ({
                 throw new Error("Invalid field: " + field)
             }
             let current = 0
-            times.add(current)
+            times.push(current)
 
             while (current + increment <= max) {
                 current += increment
-                times.add(current)
+                times.push(current)
             }
 
             return { name, times }
@@ -109,11 +109,11 @@ export const expandFields = ({
                 throw new Error("Invalid field: " + field)
             }
             let current = start
-            times.add(current)
+            times.push(current)
 
             while (current + increment <= max) {
                 current += increment
-                times.add(current)
+                times.push(current)
             }
 
             return { name, times }
@@ -128,7 +128,9 @@ export const expandFields = ({
                 if (time < min || time > max) {
                     throw new Error("Invalid field: " + field)
                 }
-                times.add(time)
+                if (!times.includes(time)) {
+                    times.push(time)
+                }
             }
 
             return { name, times }
@@ -148,7 +150,7 @@ export const expandFields = ({
                 if (i < min || i > max) {
                     throw new Error("Invalid field: " + field)
                 }
-                times.add(i)
+                times.push(i)
             }
 
             return { name, times }

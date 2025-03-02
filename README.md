@@ -25,7 +25,7 @@ command        /usr/bin/find
 
 ## How to use
 
-I used TypeScript since it's the language I am the most comfortable with.
+I have used TypeScript since it's the language I am the most comfortable with.
 
 - Install dependencies with
 
@@ -63,4 +63,15 @@ npm run expand-cron-expression "*/15 0 1,15 * 1-5 /usr/bin/find"
 
 ## Technical notes
 
-TBC
+- I have used a functional programming style for this challenge as I thought it would work well for transforming data (i.e. `map` function), more than thinking in terms of objects.
+
+- I have divided the logic into three parts:
+    - Validate the Cron string parts:
+        - Error: Please provide an input cron string
+        - Error: Please provide 5 fields and a command
+        - Success: Returns the unparse fields (`{ unparsedFields: string[]; command: string } `)
+    - Expand each field correct times:
+        - Error: Invalid field
+        - Success: Returns an array of expanded fields (`{ name: string; times: number[] }[]`)
+    - Print the formatted table:
+        - Success: Formats the expanded fields + command in a table

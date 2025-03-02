@@ -67,11 +67,11 @@ npm run expand-cron-expression "*/15 0 1,15 * 1-5 /usr/bin/find"
 
 - I divided the logic into three parts:
     - Validate the Cron string parts:
-        - Error: Please provide an input cron string
-        - Error: Please provide 5 fields and a command
-        - Success: Returns the unparsed fields (`{ unparsedFields: string[]; command: string } `)
+        - Error: `Please provide an input cron string`
+        - Error: `Please provide 5 fields and a command`
+        - Success: It returns the unparsed fields and the command (`{ unparsedFields: string[]; command: string } `)
     - Expand each field to the correct times:
-        - Error: Invalid field
-        - Success: Returns an array of expanded fields (`{ name: string; times: number[] }[]`)
+        - Error: `Invalid field`
+        - Success: It returns an array of expanded fields (`{ name: string; times: Set<number> }`)
     - Print the formatted table:
-        - Success: Formats the expanded fields + command in a table
+        - Success: It formats the expanded fields + command in a table

@@ -44,21 +44,38 @@ npm run expand-cron-expression "*/15 0 1,15 * 1-5 /usr/bin/find"
 - Run from the command line: `npm run test`
 
 ```
+> cron-parser-typescript@1.0.0 test
+> jest --coverage
+
  PASS  test/expandCronExpression.test.ts
   The validateCronStringParts() function
-    ✓ Should throw an error if cron string is not provided (6 ms)
+    ✓ Should throw an error if cron string is not provided (5 ms)
     ✓ Should throw an error if cron string does not contain 6 fields
     ✓ Should return the unparsed fields and the command
   The expandFields() function
     ✓ Should expand correctly the times of a wild card field (*) (1 ms)
     ✓ Should expand correctly the times of an integer field (simple number like 2)
-    ✓ Should expand correctly the times of an increment field (/)
+    ✓ Should expand correctly the times of an increment field (/) (1 ms)
     ✓ Should expand correctly the times of a list field (,)
     ✓ Should expand correctly the times of a range field (-)
     ✓ Should throw an 'Invalid field' error if integer field is out of range (1 ms)
     ✓ Should throw an 'Invalid field' error if increment field is out of range
+    ✓ Should throw an 'Invalid field' error if increment value is zero (1 ms)
     ✓ Should throw an 'Invalid field' error if list field is out of range
     ✓ Should throw an 'Invalid field' error if range field is out of range
+    ✓ Should throw an 'Invalid field' error if range start is greater than end
+    ✓ Should throw an 'Invalid field' error if field has an unrecognised format (1 ms)
+
+-------------------------|---------|----------|---------|---------|-------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------------|---------|----------|---------|---------|-------------------
+All files                |   93.18 |      100 |      50 |   92.68 |
+ expandCronExpression.ts |   93.18 |      100 |      50 |   92.68 | 17-30,170-175
+-------------------------|---------|----------|---------|---------|-------------------
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+Snapshots:   0 total
+Time:        0.489 s, estimated 1 s
 ```
 
 ## Technical notes

@@ -1,33 +1,42 @@
-type Field = {
+type FieldProperties = {
     name: string
     min: number
     max: number
 }
 
-const fields: Field[] = [
-    { name: "minute", min: 0, max: 59 },
-    { name: "hour", min: 0, max: 23 },
-    { name: "day of month", min: 1, max: 31 },
-    { name: "month", min: 1, max: 12 },
-    { name: "day of week", min: 0, max: 6 },
-]
-
-type Format = "/" | "," | "-" | "*" | ""
-
-type ParsedField = {
-    format: Format
-    factors: (number | "*")[]
-}
-
 type ExpandedField = {
     name: string
-    output: number[]
+    times: number[]
 }
 
-export const expandCronExpression = (cronString: string) => {
-    // Split fields
+export const expandCronExpression = ({
+    cronString,
+}: {
+    cronString: string
+}) => {
+    const { unparsedFields, command } = validateCronStringParts({ cronString })
+
+    const expandedFields = expandFields({
+        unparsedFields,
+        fieldProperties: [
+            { name: "minute", min: 0, max: 59 },
+            { name: "hour", min: 0, max: 23 },
+            { name: "day of month", min: 1, max: 31 },
+            { name: "month", min: 1, max: 12 },
+            { name: "day of week", min: 0, max: 6 },
+        ],
+    })
+
+    printFormattedTable({ expandedFields, command })
+}
+
+export const validateCronStringParts = ({
+    cronString,
+}: {
+    cronString: string
+}): { unparsedFields: string[]; command: string } => {
     if (!cronString) {
-        throw new Error(`Please provide an input string`)
+        throw new Error(`Please provide an input cron string`)
     }
 
     const parts = cronString.split(" ")
@@ -39,164 +48,124 @@ export const expandCronExpression = (cronString: string) => {
     const [...unparsedFields] = parts.slice(0, 5)
     const command = parts[parts.length - 1]
 
-    // console.log(unparsedFields)
-    // console.log(command)
+    return { unparsedFields, command }
+}
 
-    // Parse fields
-    const parsedFields: ParsedField[] = unparsedFields.map((field) => {
-        // console.log(field)
-        if (field.includes("/")) {
-            return parseField({ format: "/", field })
-        }
-        if (field.includes(",")) {
-            return parseField({ format: ",", field })
-        }
-        if (field.includes("-")) {
-            return parseField({ format: "-", field })
-        }
+export const expandFields = ({
+    unparsedFields,
+    fieldProperties,
+}: {
+    unparsedFields: string[]
+    fieldProperties: FieldProperties[]
+}): ExpandedField[] => {
+    return unparsedFields.map((field, i) => {
+        const { name, min, max } = fieldProperties[i]
+        const times: ExpandedField["times"] = []
+
         if (field == "*") {
-            return { format: "*", factors: [] }
-        }
-        if (Number.isInteger(parseInt(field))) {
-            return { format: "", factors: [parseInt(field)] }
-        }
-        throw new Error(`Invalid cron string`)
-    })
-
-    // console.log(parsedFields)
-
-    // Validate fields
-    for (let i = 0; i < parsedFields.length; i++) {
-        if (!isRangeValid({ parsedField: parsedFields[i], index: i })) {
-            throw new Error("Out of range")
-        }
-    }
-
-    // Expand fields
-    const expandedFields: ExpandedField[] = []
-    for (let i = 0; i < parsedFields.length; i++) {
-        const parsedField = parsedFields[i]
-        const output: number[] = []
-        if (parsedField.format == "") {
-            if (parsedField.factors[0] == "*") {
-                throw new Error("Data quality issue")
+            for (let i = min; i <= max; i++) {
+                times.push(i)
             }
-            output.push(parsedField.factors[0])
-            expandedFields.push({ name: fields[i].name, output })
-            continue
+            return { name, times }
         }
 
-        if (parsedField.format == "/") {
-            const start =
-                parsedField.factors[0] == "*" ? 0 : parsedField.factors[0]
+        const integerRegex = new RegExp("^\\d+$")
+        if (integerRegex.test(field)) {
+            const time = parseInt(field)
+            if (time < min || time > max) {
+                throw new Error("Invalid field: " + field)
+            }
+            return { name, times: [time] }
+        }
 
-            const increment = parsedField.factors[1]
+        const incrementRegexWithWildCard = new RegExp("^\\*/\\d+$")
+        if (incrementRegexWithWildCard.test(field)) {
+            const [_, incrementString] = field.split("/")
+            const increment = parseInt(incrementString)
+            if (increment <= 0) {
+                throw new Error("Invalid field: " + field)
+            }
+            let current = 0
+            times.push(current)
 
-            if (increment == "*") {
-                throw new Error("Data quality issue")
+            while (current + increment <= max) {
+                current += increment
+                times.push(current)
             }
 
-            output.push(start)
-
-            let end = 0
-
-            while (end + increment <= fields[i].max) {
-                output.push(end + increment)
-                end += increment
-            }
-            expandedFields.push({ name: fields[i].name, output })
-            continue
+            return { name, times }
         }
 
-        if (parsedField.format == ",") {
-            for (const factor of parsedField.factors) {
-                if (factor == "*") {
-                    throw new Error("Data quality issue")
+        const incrementRegex = new RegExp("^\\d+/\\d+$")
+        if (incrementRegex.test(field)) {
+            const [startString, incrementString] = field.split("/")
+            const start = parseInt(startString)
+            const increment = parseInt(incrementString)
+            if (start < min || start > max) {
+                throw new Error("Invalid field: " + field)
+            }
+            if (increment <= 0) {
+                throw new Error("Invalid field: " + field)
+            }
+            let current = start
+            times.push(current)
+
+            while (current + increment <= max) {
+                current += increment
+                times.push(current)
+            }
+
+            return { name, times }
+        }
+
+        const listRegex = new RegExp("^\\d+(,\\d+)*$")
+        if (listRegex.test(field)) {
+            const listString = field.split(",")
+
+            for (const str of listString) {
+                const time = parseInt(str)
+                if (time < min || time > max) {
+                    throw new Error("Invalid field: " + field)
                 }
-                output.push(factor)
+                times.push(time)
             }
-            expandedFields.push({ name: fields[i].name, output })
-            continue
+
+            return { name, times }
         }
 
-        if (parsedField.format == "*") {
-            for (let j = fields[i].min; j <= fields[i].max; j++) {
-                output.push(j)
+        const rangeRegex = new RegExp("^\\d+-\\d+$")
+        if (rangeRegex.test(field)) {
+            const [startString, endString] = field.split("-")
+            const start = parseInt(startString)
+            const end = parseInt(endString)
+
+            if (start > end) {
+                throw new Error("Invalid field: " + field)
             }
-            expandedFields.push({ name: fields[i].name, output })
-            continue
+
+            for (let i = start; i <= end; i++) {
+                if (i < min || i > max) {
+                    throw new Error("Invalid field: " + field)
+                }
+                times.push(i)
+            }
+
+            return { name, times }
         }
 
-        if (parsedField.format == "-") {
-            if (
-                parsedField.factors[0] == "*" ||
-                parsedField.factors[1] == "*"
-            ) {
-                throw new Error("Data quality issue")
-            }
+        throw new Error("Invalid field: " + field)
+    })
+}
 
-            for (
-                let j = parsedField.factors[0];
-                j <= parsedField.factors[1];
-                j++
-            ) {
-                output.push(j)
-            }
-            expandedFields.push({ name: fields[i].name, output })
-            continue
-        }
-    }
-
-    // console.log(expandedFields)
-
-    // Print fields
-    for (let i = 0; i < expandedFields.length; i++) {
-        console.log(
-            `${fields[i].name.padEnd(14, " ")} ${expandedFields[i].output.join(" ")}`,
-        )
-    }
+export const printFormattedTable = ({
+    expandedFields,
+    command,
+}: {
+    expandedFields: ExpandedField[]
+    command: string
+}): void => {
+    expandedFields.forEach((field) => {
+        console.log(`${field.name.padEnd(14, " ")} ${field.times.join(" ")}`)
+    })
     console.log(`${"command".padEnd(14, " ")} ${command}`)
-}
-
-const parseField = ({
-    format,
-    field,
-}: {
-    format: Format
-    field: string
-}): ParsedField => {
-    const factors = field.split(format).map((factor) => parseFactor({ factor }))
-
-    return { format, factors }
-}
-
-const parseFactor = ({ factor }: { factor: string }): number | "*" => {
-    if (factor == "*") {
-        return factor
-    }
-
-    if (Number.isInteger(parseInt(factor))) {
-        return parseInt(factor)
-    }
-
-    throw new Error(`Invalid cron string`)
-}
-
-const isRangeValid = ({
-    parsedField,
-    index,
-}: {
-    parsedField: ParsedField
-    index: number
-}): boolean => {
-    const fieldRanges = fields[index]
-
-    for (const factor of parsedField.factors) {
-        if (factor == "*") continue
-        if (factor < fieldRanges.min || factor > fieldRanges.max) {
-            return false
-        }
-    }
-
-    return true
 }

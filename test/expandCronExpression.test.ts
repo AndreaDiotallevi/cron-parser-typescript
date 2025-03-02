@@ -1,30 +1,74 @@
-import { expandCronExpression } from "../src/expandCronExpression"
+import {
+    expandFields,
+    validateCronStringParts,
+} from "../src/expandCronExpression"
 
-describe("The expandCronExpression() function", () => {
-    // it("Should throw an error if cron string is not provided", () => {
-    //     const f = () => {
-    //         expandCronExpression("")
-    //     }
-    //     expect(f).toThrow(`Please provide an input string`)
-    // })
-    // it("Should throw an error if cron string does not contain 6 fields", () => {
-    //     const f = () => {
-    //         expandCronExpression("* * * * *")
-    //     }
-    //     expect(f).toThrow(`Please provide 5 fields and a command`)
-    // })
-    // it("Should throw an error if cron string is invalid", () => {
-    //     const f1 = () => {
-    //         expandCronExpression("-/ * * * * /command")
-    //     }
-    //     expect(f1).toThrow("Invalid cron string")
-    // })
-    // it("Should throw an error if the minutes field is out of range (0-59)", () => {
-    //     const f = () => expandCronExpression("60 * * * * /command")
-    //     expect(f).toThrow(`Minute field out of range`)
-    // })
-    it("Should throw an error if the minutes field is out of range (0-59)", () => {
-        const f = () => expandCronExpression("*/15 4 * * * /command")
-        expect(f).toThrow(`Minute field out of range`)
+describe("The validateCronStringParts() function", () => {
+    it("Should throw an error if cron string is not provided", () => {
+        const f = () => {
+            validateCronStringParts({ cronString: "" })
+        }
+        expect(f).toThrow(`Please provide an input cron string`)
+    })
+    it("Should throw an error if cron string does not contain 6 fields", () => {
+        const f = () => {
+            validateCronStringParts({ cronString: "* * * * *" })
+        }
+        expect(f).toThrow(`Please provide 5 fields and a command`)
+    })
+    it("Should return the unparsed fields and the command", () => {
+        const { unparsedFields, command } = validateCronStringParts({
+            cronString: "1 2 3 4 5 /command",
+        })
+        expect(unparsedFields).toHaveLength(5)
+        expect(unparsedFields[0]).toEqual("1")
+        expect(unparsedFields[1]).toEqual("2")
+        expect(unparsedFields[2]).toEqual("3")
+        expect(unparsedFields[3]).toEqual("4")
+        expect(unparsedFields[4]).toEqual("5")
+        expect(command).toEqual("/command")
+    })
+})
+
+describe("The expandFields() function", () => {
+    it("Should expand correctly the times of a wild card field (*)", () => {
+        const fields = expandFields({
+            unparsedFields: ["*"],
+            fieldProperties: [{ name: "test", min: 0, max: 5 }],
+        })
+        expect(fields).toEqual([{ name: "test", times: [0, 1, 2, 3, 4, 5] }])
+    })
+    it("Should expand correctly the times of an integer field (simple number like 2)", () => {
+        const fields = expandFields({
+            unparsedFields: ["3"],
+            fieldProperties: [{ name: "test", min: 0, max: 5 }],
+        })
+        expect(fields).toEqual([{ name: "test", times: [3] }])
+    })
+    it("Should expand correctly the times of an increment field (/)", () => {
+        const fields = expandFields({
+            unparsedFields: ["1/2"],
+            fieldProperties: [{ name: "test", min: 0, max: 5 }],
+        })
+        expect(fields).toEqual([{ name: "test", times: [1, 3, 5] }])
+        const fields2 = expandFields({
+            unparsedFields: ["*/2"],
+            fieldProperties: [{ name: "test", min: 0, max: 5 }],
+        })
+        expect(fields2).toEqual([{ name: "test", times: [0, 2, 4] }])
+    })
+    it("Should expand correctly the times of a list field (,)", () => {
+        const fields = expandFields({
+            unparsedFields: ["1,2,4"],
+            fieldProperties: [{ name: "test", min: 0, max: 5 }],
+        })
+        expect(fields).toEqual([{ name: "test", times: [1, 2, 4] }])
+    })
+    it("Should expand correctly the times of a range field (-)", () => {
+        const fields = expandFields({
+            unparsedFields: ["2-4"],
+            fieldProperties: [{ name: "test", min: 0, max: 5 }],
+        })
+        expect(fields).toEqual([{ name: "test", times: [2, 3, 4] }])
     })
 })

@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "expand-cron-expression": "ts-node ./src/entrypoint.ts",
-        "test": "jest"
+        "test": "jest",
+        "text:watch": "jest --watch"
     },
     "author": "Andrea Diotallevi",
     "license": "ISC",

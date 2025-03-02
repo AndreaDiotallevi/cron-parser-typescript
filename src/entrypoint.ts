@@ -1,6 +1,5 @@
-// import { expandCronExpression } from "./expandCronExpression"
-import { expandCronExpression2 } from "./old"
+import { expandCronExpression } from "./expandCronExpression"
 
 const cronString = process.argv[2]
 
-expandCronExpression2({ cronString })
+expandCronExpression({ cronString })

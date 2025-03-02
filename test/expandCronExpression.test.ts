@@ -81,20 +81,29 @@ describe("The expandFields() function", () => {
         expect(f).toThrow(`Invalid field: 8`)
     })
     it("Should throw an 'Invalid field' error if increment field is out of range", () => {
-        const f1 = () => {
+        const f = () => {
             expandFields({
                 unparsedFields: ["60/99"],
                 fieldProperties: [{ name: "test", min: 0, max: 5 }],
             })
         }
-        expect(f1).toThrow(`Invalid field: 60/99`)
-        const f2 = () => {
+        expect(f).toThrow(`Invalid field: 60/99`)
+    })
+    it("Should throw an 'Invalid field' error if increment value is zero", () => {
+        const f1 = () => {
             expandFields({
                 unparsedFields: ["*/0"],
                 fieldProperties: [{ name: "test", min: 0, max: 5 }],
             })
         }
-        expect(f2).toThrow(`Invalid field: */0`)
+        expect(f1).toThrow(`Invalid field: */0`)
+        const f2 = () => {
+            expandFields({
+                unparsedFields: ["1/0"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f2).toThrow(`Invalid field: 1/0`)
     })
     it("Should throw an 'Invalid field' error if list field is out of range", () => {
         const f = () => {
@@ -113,5 +122,23 @@ describe("The expandFields() function", () => {
             })
         }
         expect(f).toThrow(`Invalid field: 1-7`)
+    })
+    it("Should throw an 'Invalid field' error if range start is greater than end", () => {
+        const f = () => {
+            expandFields({
+                unparsedFields: ["7-1"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f).toThrow(`Invalid field: 7-1`)
+    })
+    it("Should throw an 'Invalid field' error if field has an unrecognised format", () => {
+        const f = () => {
+            expandFields({
+                unparsedFields: ["7-1,8"],
+                fieldProperties: [{ name: "test", min: 0, max: 5 }],
+            })
+        }
+        expect(f).toThrow(`Invalid field: 7-1,8`)
     })
 })

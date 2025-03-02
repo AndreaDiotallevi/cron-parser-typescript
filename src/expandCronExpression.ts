@@ -6,7 +6,7 @@ type FieldProperties = {
 
 type ExpandedField = {
     name: string
-    times: number[]
+    times: Set<number>
 }
 
 export const expandCronExpression = ({
@@ -60,11 +60,11 @@ export const expandFields = ({
 }): ExpandedField[] => {
     return unparsedFields.map((field, i) => {
         const { name, min, max } = fieldProperties[i]
-        const times: ExpandedField["times"] = []
+        const times: ExpandedField["times"] = new Set()
 
         if (field == "*") {
             for (let i = min; i <= max; i++) {
-                times.push(i)
+                times.add(i)
             }
             return { name, times }
         }
@@ -75,19 +75,23 @@ export const expandFields = ({
             if (time < min || time > max) {
                 throw new Error("Invalid field: " + field)
             }
-            return { name, times: [time] }
+            times.add(time)
+            return { name, times }
         }
 
         const incrementRegexWithWildCard = new RegExp("^\\*/\\d+$")
         if (incrementRegexWithWildCard.test(field)) {
             const [_, incrementString] = field.split("/")
             const increment = parseInt(incrementString)
+            if (increment == 0) {
+                throw new Error("Invalid field: " + field)
+            }
             let current = 0
-            times.push(current)
+            times.add(current)
 
             while (current + increment <= max) {
                 current += increment
-                times.push(current)
+                times.add(current)
             }
 
             return { name, times }
@@ -98,15 +102,18 @@ export const expandFields = ({
             const [startString, incrementString] = field.split("/")
             const start = parseInt(startString)
             const increment = parseInt(incrementString)
+            if (increment == 0) {
+                throw new Error("Invalid field: " + field)
+            }
             if (start < min || start > max) {
                 throw new Error("Invalid field: " + field)
             }
             let current = start
-            times.push(current)
+            times.add(current)
 
             while (current + increment <= max) {
                 current += increment
-                times.push(current)
+                times.add(current)
             }
 
             return { name, times }
@@ -121,7 +128,7 @@ export const expandFields = ({
                 if (time < min || time > max) {
                     throw new Error("Invalid field: " + field)
                 }
-                times.push(time)
+                times.add(time)
             }
 
             return { name, times }
@@ -141,7 +148,7 @@ export const expandFields = ({
                 if (i < min || i > max) {
                     throw new Error("Invalid field: " + field)
                 }
-                times.push(i)
+                times.add(i)
             }
 
             return { name, times }
@@ -159,7 +166,9 @@ export const printFormattedTable = ({
     command: string
 }): void => {
     expandedFields.forEach((field) => {
-        console.log(`${field.name.padEnd(14, " ")} ${field.times.join(" ")}`)
+        console.log(
+            `${field.name.padEnd(14, " ")} ${Array.from(field.times).join(" ")}`,
+        )
     })
     console.log(`${"command".padEnd(14, " ")} ${command}`)
 }
